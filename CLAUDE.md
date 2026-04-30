@@ -5,6 +5,7 @@
 > file by file, in the correct dependency order. Read this document fully before writing
 > a single line of code. Every decision you make must trace back to a requirement here.**
 
+Note: Add zerve_events.csv file (dataset) to the repository root.
 ---
 
 ## 0. MISSION BRIEF
