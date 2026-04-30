@@ -507,11 +507,19 @@ with _tab4:
                 _fd_disp[_fold_display_col] = _fd_disp[_fold_display_col].astype(str)
 
         if _meta.get("oof_auc"):
-            _mean_row = {c: "—" for c in _fd_disp.columns}
-            if _fold_col:
-                _mean_row[_fold_col.replace("_"," ").title()] = "Mean"
-            if _auc_col:
-                _mean_row[_auc_col.replace("_"," ").title()] = f"{_fd[_auc_col].mean():.4f}"
+            # Build mean row - only compute means for numeric columns
+            _mean_row = {}
+            for c in _fd_disp.columns:
+                _orig_col = c.lower().replace(" ", "_")
+                if _orig_col in _fd.columns and pd.api.types.is_numeric_dtype(_fd[_orig_col]):
+                    # Numeric column - compute mean
+                    _mean_row[c] = f"{_fd[_orig_col].mean():.4f}"
+                elif _fold_col and c == _fold_col.replace("_"," ").title():
+                    # Fold column - label it "Mean"
+                    _mean_row[c] = "Mean"
+                else:
+                    # Other columns - leave empty string (not "—" to avoid Arrow type issues)
+                    _mean_row[c] = ""
             _fd_disp = pd.concat([_fd_disp, pd.DataFrame([_mean_row])], ignore_index=True)
 
         st.dataframe(_fd_disp, use_container_width=True, hide_index=True)
