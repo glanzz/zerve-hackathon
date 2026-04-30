@@ -1,0 +1,125 @@
+
+=================================================================
+=== 2b. ROW COUNT / DISTINCT USERS ===
+=================================================================
+  Total rows         : 3,509,628
+  Distinct person_ids: 17,541
+
+=================================================================
+=== 2c. DATE RANGE ===
+=================================================================
+  timestamp dtype    : datetime64[ns, UTC]
+  Null timestamps    : 0
+  Min timestamp      : 2025-09-01 00:03:11.698000+00:00
+  Max timestamp      : 2026-04-16 23:59:58.634000+00:00
+
+=================================================================
+=== 2d. TOP 30 EVENTS ===
+=================================================================
+  Event                                                        Count      Pct
+  ------------------------------------------------------- ----------  -------
+  credits_used                                               934,821   26.64%
+  $ai_generation                                             549,818   15.67%
+  $exception                                                 347,985    9.92%
+  addon_credits_used                                         272,411    7.76%
+  notebook_deployment_usage_tracked                          189,498    5.40%
+  $web_vitals                                                125,850    3.59%
+  agent_tool_call_get_block_tool                              92,596    2.64%
+  agent_tool_call_create_block_tool                           66,758    1.90%
+  credits_below_4                                             55,106    1.57%
+  agent_tool_call_get_variable_preview_tool                   44,560    1.27%
+  $groupidentify                                              44,200    1.26%
+  agent_tool_call_run_block_tool                              39,245    1.12%
+  agent_tool_call_refactor_block_tool                         38,706    1.10%
+  $pageview                                                   37,772    1.08%
+  run_block                                                   36,254    1.03%
+  agent_worker_created                                        35,159    1.00%
+  credits_exceeded                                            35,082    1.00%
+  credits_below_3                                             33,061    0.94%
+  agent_tool_call_finish_ticket_tool                          32,720    0.93%
+  sign_in                                                     32,318    0.92%
+  $pageleave                                                  31,380    0.89%
+  $set                                                        29,188    0.83%
+  $identify                                                   25,084    0.71%
+  credits_below_2                                             21,285    0.61%
+  skip_onboarding_form                                        20,153    0.57%
+  agent_tool_call_get_canvas_summary_tool                     19,483    0.56%
+  credits_below_1                                             17,884    0.51%
+  new_user_created                                            15,995    0.46%
+  agent_new_chat                                              15,319    0.44%
+  sign_up                                                     15,187    0.43%
+
+=================================================================
+=== 3. EXACT-STRING CHECKS ===
+=================================================================
+  PASS  'subscription_upgraded'
+           rows: 328   distinct_person_ids: 323
+  === FAIL ===  'subscription upgraded'
+           rows: 0   distinct_person_ids: 0
+  === FAIL ===  'redeem upgrade offer'
+           rows: 0   distinct_person_ids: 0
+  === FAIL ===  'redeem_upgrade_offer'
+           rows: 0   distinct_person_ids: 0
+
+  >>> Canonical upgrade event: 'subscription_upgraded'  (upgraders: 323)
+
+=================================================================
+=== 4. LEAKAGE CANDIDATES ===
+=================================================================
+
+  -- properties.subscription_type --
+    None                                         3,509,624
+    Free                                                 4
+    OK: Only 'Free' or null -- no obvious leakage
+
+  -- properties.offer_declined --
+    None                                         3,509,621
+    True                                                 7
+    *** LEAKAGE FLAG: non-Free/non-null values -> [True]
+
+  -- properties.credits_received --
+    nan                                          3,508,948
+    10.0                                               398
+    2.0                                                282
+    *** LEAKAGE FLAG: non-Free/non-null values -> [2.0, 10.0]
+
+  -- properties.credits_awarded --
+    nan                                          3,507,626
+    10.0                                               911
+    25.0                                               781
+    2.0                                                283
+    5.0                                                 20
+    0.1                                                  4
+    100.0                                                2
+    50.0                                                 1
+    *** LEAKAGE FLAG: non-Free/non-null values -> [2.0, 0.1, 25.0, 10.0, 100.0]
+
+  -- properties.total_addon_credits --
+    nan                                          3,507,910
+    10.0                                               784
+    25.0                                               758
+    20.0                                                86
+    27.0                                                11
+    35.0                                                10
+    5.0                                                 10
+    2.0                                                  9
+    12.0                                                 4
+    30.0                                                 4
+    *** LEAKAGE FLAG: non-Free/non-null values -> [2.0, 0.1, 2.1, 25.0, 10.0]
+
+=================================================================
+=== 5. POSITIVE RATE ===
+=================================================================
+  Upgrade event used  : 'subscription_upgraded'
+  Distinct upgraders  : 323
+  Distinct total users: 17,541
+  Positive rate       : 1.84%
+
+=================================================================
+=== SYNC 0 SUMMARY ===
+=================================================================
+  total_rows           = 3,509,628
+  distinct_users       = 17,541
+  positive_rate_pct    = 1.84%
+  top_event            = "credits_used" (count = 934,821)
+  upgrade_event_string = "subscription_upgraded"
