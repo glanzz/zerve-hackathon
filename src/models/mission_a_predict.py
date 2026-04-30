@@ -101,11 +101,11 @@ def predict_single(user_features: Dict[str, float]) -> Dict[str, Any]:
     _X_t = _pipeline[:-1].transform(_X)
     _importances = _pipeline.named_steps["model"].feature_importances_
     _top3_idx = np.argsort(_importances)[::-1][:3]
-    _top3 = [
-        {"feature": _feat_cols[_i], "value": float(_X_t[0, _i]),
-         "importance": float(_importances[_i])}
+    # Return as dict[feature_name -> value] for Pydantic validation
+    _top3 = {
+        _feat_cols[_i]: float(_X_t[0, _i])
         for _i in _top3_idx
-    ]
+    }
 
     return {
         "upgrade_probability": round(_prob, 4),
